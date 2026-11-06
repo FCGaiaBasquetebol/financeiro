@@ -1,0 +1,16 @@
+#fcauth{position:fixed;inset:0;z-index:100;background:#0d0d0b;display:flex;align-items:center;justify-content:center;padding:16px;font-family:Inter,system-ui,sans-serif}
+#fcauth[hidden]{display:none}
+.fa-card{width:100%;max-width:400px;background:#fff;color:#141412;border-radius:18px;padding:28px 24px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.fa-logo{width:52px;height:52px;border-radius:14px;background:#e2b812;color:#141412;display:grid;place-items:center;font:700 24px 'Barlow Condensed',Inter,sans-serif;margin-bottom:12px}
+.fa-card h1{font:700 26px 'Barlow Condensed',Inter,sans-serif;margin:0;letter-spacing:.01em}
+.fa-sub{margin:2px 0 18px;color:#6b6b63;font-size:13px}
+.fa-card label{display:block;font-size:13px;font-weight:600;margin:12px 0 0}
+.fa-card input{display:block;width:100%;box-sizing:border-box;min-height:44px;margin-top:4px;padding:8px 12px;border:1px solid #c9c8c0;border-radius:10px;font:inherit;font-size:16px}
+.fa-btn{min-height:44px;margin-top:16px;padding:8px 18px;border:0;border-radius:10px;background:#e2b812;color:#141412;font:600 15px Inter,sans-serif;cursor:pointer}
+.fa-card .fa-btn{width:100%}
+.fa-msg{min-height:20px;margin:10px 0 0;color:#a8261a;font-size:14px}.fa-msg.ok{color:#456}
+.fa-hint{color:#6b6b63;font-size:12.5px;margin:8px 0 0}
+.fa-users{max-width:900px}.fa-new{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.fa-new input,.fa-new select{min-height:40px;padding:4px 10px;border:1px solid #c9c8c0;border-radius:8px;font:inherit}.fa-new .fa-btn{margin:0}
+.fa-pw{background:#fff7d6;border:1px solid #e2b812;border-radius:10px;padding:12px;margin:8px 0}.fa-pw code{font-size:16px;font-weight:700;user-select:all}
+.fa-tw{overflow-x:auto}.fa-users table{width:100%;border-collapse:collapse}.fa-users th,.fa-users td{padding:8px;border-bottom:1px solid #e3e2da;text-align:left;vertical-align:middle}
+.fa-act{display:flex;gap:6px;flex-wrap:wrap}.fa-act button{min-height:34px;padding:2px 10px;border:1px solid #c9c8c0;border-radius:8px;background:#fff;cursor:pointer}.fa-act .danger{color:#a8261a}
