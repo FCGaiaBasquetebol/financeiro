@@ -216,7 +216,7 @@ table.stf input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink)}
       <a href="#dividas" data-v="dividas"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>Dívidas</a>
     <a href="#orcamento" data-v="orcamento"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Orçamento</a>
     <a href="#notas" data-v="notas"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/><path d="M9 8h6M9 12h6"/></svg>Notas de Pagamento</a>
-    <a href="#utilizadores" data-v="utilizadores" id="nav-users" hidden>Utilizadores</a><a href="#" id="nav-out" class="navout">Sair</a>
+    <a href="#utilizadores" data-v="utilizadores" id="nav-users" hidden>Utilizadores</a><a href="#atividade" data-v="atividade" id="nav-act" hidden>Atividade</a><a href="#" id="nav-out" class="navout">Sair</a>
     </nav>
     <div class="foot"><b id="who">—</b><br><a href="#" id="logout" style="color:inherit;text-decoration:underline">Sair</a></div>
   </aside>
@@ -272,7 +272,7 @@ var CREST="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWoAAAGkCAMAAAAv5J8VAAA
 var SM=['Setembro','Outubro','Novembro','Dezembro','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto'];
 var ready={movs:false,plan:false,debts:false,cfg:false,staff:true,budget:true};
 var ui={filter:'all',month:TODAY.slice(0,7),del:null,nm:(+TODAY.slice(5,7)+3)%12,ntab:'notas',prev:false,edit:false,occ:'all',om:'month',nsel:null,noff:{},ndate:''};
-var VIEWS=['painel','movimentos','tesouraria','dividas','orcamento','notas','utilizadores'];
+var VIEWS=['painel','movimentos','tesouraria','dividas','orcamento','notas','utilizadores','atividade'];
 var view=VIEWS.indexOf(location.hash.slice(1))>-1?location.hash.slice(1):'painel';
 
 function NM(){return (+ui.month.slice(5)+3)%12}
@@ -564,6 +564,7 @@ function render(){
   document.querySelectorAll('.nav a').forEach(function(a){var on=a.dataset.v===view;a.classList.toggle('on',on);if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
   var m=$('#main');
   if(view==='utilizadores'){m.innerHTML='';m.classList.add('fa-wrap');FCAuth.renderUsers(m);return}
+  if(view==='atividade'){m.innerHTML='';m.classList.add('fa-wrap');FCAct.render(m,FCAuth.client());return}
   m.classList.remove('fa-wrap');
   if(dbChecked&&!db){m.innerHTML='<div class="card wide"><h2>Sem ligação aos dados</h2><p class="empty">Recarrega a página e entra de novo.</p></div>';return}
   if(!(ready.movs&&ready.plan&&ready.debts&&ready.cfg&&ready.staff&&ready.budget)){m.innerHTML='<p class="load">A carregar…</p>';return}
@@ -771,7 +772,7 @@ render();
 window.__fcstart=function(me,sb){
   db=window.FCDb(sb);assets=window.FCAssets(sb);dbChecked=true;
   var w=document.getElementById('who');if(w)w.textContent=(me.nome||me.email)+' · '+(me.role==='admin'?'Admin':'Membro');
-  var nu=document.getElementById('nav-users');if(nu)nu.hidden=me.role!=='admin';
+  var nu=document.getElementById('nav-users');if(nu)nu.hidden=me.role!=='admin';var na=document.getElementById('nav-act');if(na)na.hidden=me.role!=='admin';
   setTimeout(function(){var ch=false;Object.keys(ready).forEach(function(k){if(!ready[k]){ready[k]=true;ch=true}});if(ch)render()},3000);
   listen('movs','movs');listen('plan','plan');listen('debts','debts');listen('staff','staff');listen('budget','budget');
   db.doc('cfg/main').onSnapshot(function(s){state.cfg=s.exists?s.data():null;ready.cfg=true;render()},function(){ready.cfg=true;render()});
@@ -782,6 +783,7 @@ window.__fcstart=function(me,sb){
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js"></script>
 <script src="db.js"></script>
+<script src="atividade.js"></script>
 <script>
 document.addEventListener('click',function(e){var o=e.target.closest('#logout,#nav-out');if(o){e.preventDefault();FCAuth.signOut()}});
 FCAuth.init(window.__fcstart);

@@ -34,7 +34,9 @@ async function start(){
   if(me.must_change_password){showChange();return}
   ready();
 }
-function ready(){hide();if(cb)cb(me,sb)}
+function ready(){hide();
+  try{if(!sessionStorage.getItem('fc_entrou')){sessionStorage.setItem('fc_entrou','1');sb.from('atividade').insert({acao:'entrou'}).then(function(){},function(){})}}catch(e){}
+  if(cb)cb(me,sb)}
 async function call(body){
   var s=(await sb.auth.getSession()).data.session;
   var r=await fetch(URL_+'/functions/v1/admin-users',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token,apikey:KEY},body:JSON.stringify(body)});
@@ -66,7 +68,7 @@ async function renderUsers(host){
 window.FCAuth={
   init:function(onReady){cb=onReady;sb=window.__sb||window.supabase.createClient(URL_,KEY,{auth:{persistSession:true,autoRefreshToken:true}});
     sb.auth.onAuthStateChange(function(ev){if(ev==='SIGNED_OUT'){me=null;showLogin()}});start()},
-  signOut:function(){return sb.auth.signOut()},
+  signOut:async function(){try{sessionStorage.removeItem('fc_entrou');await sb.from('atividade').insert({acao:'saiu'})}catch(e){}return sb.auth.signOut()},
   me:function(){return me},client:function(){return sb},renderUsers:renderUsers
 };
 })();

@@ -14,3 +14,5 @@
 .fa-pw{background:#fff7d6;border:1px solid #e2b812;border-radius:10px;padding:12px;margin:8px 0}.fa-pw code{font-size:16px;font-weight:700;user-select:all}
 .fa-tw{overflow-x:auto}.fa-users table{width:100%;border-collapse:collapse}.fa-users th,.fa-users td{padding:8px;border-bottom:1px solid #e3e2da;text-align:left;vertical-align:middle}
 .fa-act{display:flex;gap:6px;flex-wrap:wrap}.fa-act button{min-height:34px;padding:2px 10px;border:1px solid #c9c8c0;border-radius:8px;background:#fff;cursor:pointer}.fa-act .danger{color:#a8261a}
+.act-d{font-size:12.5px;color:#6b6b63;margin-top:2px;line-height:1.35}
+.act-last{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0 12px}
