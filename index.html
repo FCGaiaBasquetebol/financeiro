@@ -214,6 +214,7 @@ table.stf input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink)}
 .bt td.nm b{display:inline}.bt td.nm .ebtn{display:inline-block;min-height:26px!important;height:26px;padding:0 10px!important;margin-left:8px;font-size:12px;vertical-align:middle;line-height:1}
 .bt.rs tr.pgrp{cursor:pointer}.bt.rs tr.pgrp:hover{background:#f6f3ea}.chv{display:inline-block;width:16px;color:var(--mute)}.bt.rs tr.sub2 td{padding:3px 6px 3px 28px;background:#faf8f3}.bt.rs tr.sub2 td:last-child{padding-right:6px}
 .bt.esc td.r,.bt.esc th.r{text-align:right}.ein{width:84px;min-height:34px;text-align:right}
+.bt td.dif{background:#fdeccf}.bt td.fim{background:#eceae4;color:#9a968a}.bt td.fim input{background:#eceae4}
 </style>
 <link rel="stylesheet" href="auth.css">
 <style>[hidden]{display:none!important}.navout{margin-top:auto}.main.fa-wrap{padding:24px}</style>
@@ -532,6 +533,7 @@ function lineModal(l,kind){
    +F('b-desc','Descrição',txt('b-desc','desc','Ex.: Sub18 A – Principal',l?l.desc:''))
    +F('b-notas','Notas (internas, não saem na nota de pagamento)','<textarea id="b-notas" name="notas" placeholder="Ex.: só a partir de janeiro">'+esc(l&&l.notas||'')+'</textarea>')
    +'<div class="two">'+F('b-qty','Quantidade',txt('b-qty','qty','1',l&&l.qty!=null?l.qty:'','decimal'))+F('b-unit','Valor unitário (€)',txt('b-unit','unit','0,00',l&&l.unit!=null?l.unit:'','decimal'))+'</div>'
+   +(isNew?'':F('b-ap','Se mudares a quantidade ou o valor, aplicar',sel('b-ap','ap',[['all','A todos os meses']].concat(SM.map(function(m,i){return [String(i),'A partir de '+m]})),'all')))
    +F('b-per','Periodicidade',sel('b-per','per',[['mensal','Mensal'],['unico','Único (pagamento uma só vez)']],P.t))
    +'<div class="two">'+F('b-from',P.t==='unico'?'Mês':'Mensal: de',sel('b-from','from',ms,String(P.a)))+'<div id="b-towrap">'+F('b-to','até',sel('b-to','to',ms,String(P.b)))+'</div></div><p class="hint">'+(isNew?'Cada mês fica com quantidade × valor unitário. Depois podes ajustar qualquer mês.':'Se mudares a quantidade, o valor unitário ou os meses, os valores recalculam. Depois podes ajustar um mês à mão.')+'</p>'
    +(k==='exp'?'<label class="ck"><input type="checkbox" name="nota"'+((l&&l.nota)?' checked':'')+'> Gerar nota de pagamento (automático para pessoal)</label>':'')
@@ -550,7 +552,7 @@ function lineModal(l,kind){
     }
     var nq=qty==null?1:qty,nu=unit||0,oq=l.qty==null?1:+l.qty,ou=+l.unit||0,op=pat(l);
     var m2=(l.m||[]).map(Number);while(m2.length<12)m2.push(0);
-    if(nq*nu!==oq*ou)m2=rescale(l,nq,nu);
+    if(nq*nu!==oq*ou){if(v.ap&&v.ap.value!=='all'){var f0=+v.ap.value,am0=round2(nq*nu);m2=m2.map(function(x,i){return i>=f0&&x?am0:x})}else m2=rescale(l,nq,nu)}
     if(fa!==op.a||fb!==op.b||per!==op.t){var am=round2(nq*nu);m2=m2.map(function(x,i){return i>=fa&&i<=fb?(x?x:am):0})}
     base.m=m2;
     return putLine('budget',l,base);
@@ -592,15 +594,17 @@ function orcamento(){
   var vis=lines.filter(function(l){return (tf==='all'||(tf==='Treinadores'?(l.tipo==='Treinador'||l.tipo==='Coordenador'):(l.tipo||'Outros')===tf))&&(!q||((l.nome||'')+' '+(l.desc||'')+' '+(l.notas||'')+' '+(l.tipo||'')).toLowerCase().indexOf(q)>=0)});
   var vh=all?SM.map(function(m){return '<th>'+m.slice(0,3)+' (€)</th>'}).join('')+'<th>Total (€)</th>':'<th>'+SM[om]+' (€)</th><th>Época (€)</th>';
   var ncols=3+(all?13:2);
-  var vc=function(m,editable){
+  var vc=function(m,editable,ln){
+    var exp=ln&&ln.unit!=null?round2((ln.qty==null?1:+ln.qty)*(+ln.unit||0)):null,lastNz=-1;if(ln)(ln.m||[]).forEach(function(x,i){if(+x)lastNz=i});
+    var cls=function(i){if(!ln)return '';var x=+(ln.m||[])[i]||0;if(x&&exp!=null&&Math.abs(x-exp)>0.005)return ' class="dif" title="Diferente do valor unitário × quantidade"';if(!x&&lastNz>=0&&i>lastNz)return ' class="fim" title="Sem pagamento"';return ''};
     m=(m||[]).map(Number);while(m.length<12)m.push(0);
-    var inp=function(i){return editable?'<td><span class="ei"><input type="number" step="0.5" data-bf="m" data-i="'+i+'" value="'+(+m[i]||0)+'" aria-label="'+SM[i]+' em euros"><i>€</i></span></td>':'<td>'+cell(m[i])+'</td>'};
+    var inp=function(i){return editable?'<td'+cls(i)+'><span class="ei"><input type="number" step="0.5" data-bf="m" data-i="'+i+'" value="'+(+m[i]||0)+'" aria-label="'+SM[i]+' em euros"><i>€</i></span></td>':'<td'+cls(i)+'>'+cell(m[i])+'</td>'};
     return (all?SM.map(function(x,i){return inp(i)}).join(''):inp(om))+'<td class="tt">'+cell(tot(m))+'</td>';
   };
   var row=function(l){
     var nome=l.nome||l.label||'',tp=l.tipo||'Outros';
     var dd=l.desc||'';if(nome===tp&&dd){nome=dd;dd=''}
-    return '<tr data-id="'+l.id+'"><td class="nm"><b>'+esc(nome)+'</b>'+(ed?' <button class="btn sm ebtn" data-act="editline" data-id="'+l.id+'">Editar</button>':'')+'<small>'+esc(tp+(dd?' · '+dd:''))+(l.nota&&!isPessoa(l)?' · gera nota':'')+(patTxt(l)?' · '+patTxt(l):'')+'</small>'+(l.notas?'<small class="nt">'+esc(l.notas)+'</small>':'')+'</td><td class="qn">'+(l.qty==null?'–':l.qty)+'</td><td class="qn">'+(l.unit==null?'–':eur(+l.unit))+'</td>'+vc(l.m,ed)+'</tr>';
+    return '<tr data-id="'+l.id+'"><td class="nm"><b>'+esc(nome)+'</b>'+(ed?' <button class="btn sm ebtn" data-act="editline" data-id="'+l.id+'">Editar</button>':'')+'<small>'+esc(tp+(dd?' · '+dd:''))+(l.nota&&!isPessoa(l)?' · gera nota':'')+(patTxt(l)?' · '+patTxt(l):'')+'</small>'+(l.notas?'<small class="nt">'+esc(l.notas)+'</small>':'')+'</td><td class="qn">'+(l.qty==null?'–':l.qty)+'</td><td class="qn">'+(l.unit==null?'–':eur(+l.unit))+'</td>'+vc(l.m,ed,l)+'</tr>';
   };
   var rs=ui.ov==='resumo'&&!ed;
   if(rs){
