@@ -519,15 +519,18 @@ function monthNav(){
   var opts='';for(var i=0;i<12;i++){var k=mkOf(i);opts+='<option value="'+k+'"'+(k===ui.month?' selected':'')+'>'+SM[i]+' '+k.slice(0,4)+'</option>'}
   return '<span class="mnav"><button class="btn sm" data-act="mgprev" aria-label="Mês anterior">‹</button><label class="sr" for="mg">Mês</label><select id="mg" data-mg="1">'+opts+'</select><button class="btn sm" data-act="mgnext" aria-label="Mês seguinte">›</button></span>';
 }
+function pat(l){var nz=[];(l.m||[]).forEach(function(v,i){if(+v)nz.push(i)});if(!nz.length)return {t:'mensal',a:0,b:9};if(nz.length===1)return {t:'unico',a:nz[0],b:nz[0]};return {t:'mensal',a:nz[0],b:nz[nz.length-1]}}
+function patTxt(l){var q=pat(l);if(!(l.m||[]).some(function(v){return +v}))return '';return q.t==='unico'?'Único · '+SM[q.a]:'Mensal · '+(q.a===q.b?SM[q.a]:SM[q.a].slice(0,3)+'–'+SM[q.b].slice(0,3))}
 function lineModal(l,kind){
-  var isNew=!l,k=kind||l.kind,tipos=k==='rec'?TREC:TEXP;
+  var isNew=!l,k=kind||l.kind,tipos=k==='rec'?TREC:TEXP,P=l?pat(l):{t:'mensal',a:0,b:9};
   var ms=SM.map(function(m,i){return [String(i),m]});
   var body=F('b-nome','Nome',txt('b-nome','nome','Ex.: João Silva',l?(l.nome||l.label):''))
    +F('b-tipo','Tipo',sel('b-tipo','tipo',tipos,l?(l.tipo||'Outros'):(k==='rec'?TREC[0]:'Treinador')))
    +F('b-desc','Descrição',txt('b-desc','desc','Ex.: Sub18 A – Principal',l?l.desc:''))
    +F('b-notas','Notas (internas, não saem na nota de pagamento)','<textarea id="b-notas" name="notas" placeholder="Ex.: só a partir de janeiro">'+esc(l&&l.notas||'')+'</textarea>')
    +'<div class="two">'+F('b-qty','Quantidade',txt('b-qty','qty','1',l&&l.qty!=null?l.qty:'','decimal'))+F('b-unit','Valor unitário (€)',txt('b-unit','unit','0,00',l&&l.unit!=null?l.unit:'','decimal'))+'</div>'
-   +(isNew?'<div class="two">'+F('b-from','Meses: de',sel('b-from','from',ms,'0'))+F('b-to','até',sel('b-to','to',ms,'9'))+'</div><p class="hint">Cada mês fica com quantidade × valor unitário. Depois podes ajustar qualquer mês.</p>':'<p class="hint">Se mudares a quantidade ou o valor unitário, os meses recalculam na mesma proporção. Depois podes ajustar um mês à mão.</p>')
+   +F('b-per','Periodicidade',sel('b-per','per',[['mensal','Mensal'],['unico','Único (pagamento uma só vez)']],P.t))
+   +'<div class="two">'+F('b-from',P.t==='unico'?'Mês':'Mensal: de',sel('b-from','from',ms,String(P.a)))+'<div id="b-towrap">'+F('b-to','até',sel('b-to','to',ms,String(P.b)))+'</div></div><p class="hint">'+(isNew?'Cada mês fica com quantidade × valor unitário. Depois podes ajustar qualquer mês.':'Se mudares a quantidade, o valor unitário ou os meses, os valores recalculam. Depois podes ajustar um mês à mão.')+'</p>'
    +(k==='exp'?'<label class="ck"><input type="checkbox" name="nota"'+((l&&l.nota)?' checked':'')+'> Gerar nota de pagamento (automático para pessoal)</label>':'')
    +(isNew?'':'<div style="margin-top:12px"><button type="button" class="btn danger" data-act="delmodal" data-id="'+l.id+'">Apagar linha</button></div>');
   openModal(isNew?'Nova linha':'Editar linha',body,function(f){
@@ -536,15 +539,20 @@ function lineModal(l,kind){
     var desc=v.desc.value.trim();
     var qty=v.qty.value.trim()===''?null:round2(num(v.qty.value)||0),unit=v.unit.value.trim()===''?null:round2(num(v.unit.value)||0);
     var base={nome:nome,tipo:v.tipo.value,desc:desc,notas:v.notas.value.trim(),label:nome+(desc?' – '+desc:''),qty:qty,unit:unit,nota:!!(v.nota&&v.nota.checked)};
+    var per=v.per.value,fa=+v.from.value,fb=per==='unico'?fa:+v.to.value;if(fb<fa){var tt=fa;fa=fb;fb=tt}
     if(isNew){
-      var a=+v.from.value,b=+v.to.value,amt=round2((qty==null?1:qty)*(unit||0)),m=[];
-      for(var i=0;i<12;i++)m.push(i>=a&&i<=b?amt:0);
+      var amt=round2((qty==null?1:qty)*(unit||0)),m=[];
+      for(var i=0;i<12;i++)m.push(i>=fa&&i<=fb?amt:0);
       return db.collection('budget').add(Object.assign({cc:ui.occ,kind:k,m:m},base)).then(function(){});
     }
-    var nq=qty==null?1:qty,nu=unit||0,oq=l.qty==null?1:+l.qty,ou=+l.unit||0;
-    if(nq*nu!==oq*ou)base.m=rescale(l,nq,nu);
+    var nq=qty==null?1:qty,nu=unit||0,oq=l.qty==null?1:+l.qty,ou=+l.unit||0,op=pat(l);
+    var m2=(l.m||[]).map(Number);while(m2.length<12)m2.push(0);
+    if(nq*nu!==oq*ou)m2=rescale(l,nq,nu);
+    if(fa!==op.a||fb!==op.b||per!==op.t){var am=round2(nq*nu);m2=m2.map(function(x,i){return i>=fa&&i<=fb?(x?x:am):0})}
+    base.m=m2;
     return putLine('budget',l,base);
   },isNew?'Adicionar':'Guardar');
+  setTimeout(function(){var pe=document.getElementById('b-per');if(!pe)return;var tg=function(){var u=pe.value==='unico',w=document.getElementById('b-towrap'),lb=document.querySelector('label[for=b-from]');if(w)w.style.display=u?'none':'';if(lb)lb.textContent=u?'Mês':'Mensal: de'};pe.addEventListener('change',tg);tg()},0);
 }
 function orcamento(){
   var cc=ui.occ,all=ui.om==='all',om=all?'all':NM(),ed=ui.edit&&cc!=='all';
@@ -588,7 +596,7 @@ function orcamento(){
   var row=function(l){
     var nome=l.nome||l.label||'',tp=l.tipo||'Outros';
     var dd=l.desc||'';if(nome===tp&&dd){nome=dd;dd=''}
-    return '<tr data-id="'+l.id+'"><td class="nm"><b>'+esc(nome)+'</b>'+(ed?' <button class="btn sm ebtn" data-act="editline" data-id="'+l.id+'">Editar</button>':'')+'<small>'+esc(tp+(dd?' · '+dd:''))+(l.nota&&!isPessoa(l)?' · gera nota':'')+'</small>'+(l.notas?'<small class="nt">'+esc(l.notas)+'</small>':'')+'</td><td class="qn">'+(l.qty==null?'–':l.qty)+'</td><td class="qn">'+(l.unit==null?'–':eur(+l.unit))+'</td>'+vc(l.m,ed)+'</tr>';
+    return '<tr data-id="'+l.id+'"><td class="nm"><b>'+esc(nome)+'</b>'+(ed?' <button class="btn sm ebtn" data-act="editline" data-id="'+l.id+'">Editar</button>':'')+'<small>'+esc(tp+(dd?' · '+dd:''))+(l.nota&&!isPessoa(l)?' · gera nota':'')+(patTxt(l)?' · '+patTxt(l):'')+'</small>'+(l.notas?'<small class="nt">'+esc(l.notas)+'</small>':'')+'</td><td class="qn">'+(l.qty==null?'–':l.qty)+'</td><td class="qn">'+(l.unit==null?'–':eur(+l.unit))+'</td>'+vc(l.m,ed)+'</tr>';
   };
   var rs=ui.ov==='resumo'&&!ed;
   if(rs){
