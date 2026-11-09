@@ -211,6 +211,7 @@ table.stf input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink)}
 .btn.danger{background:#fff;color:#b3261e;border-color:#b3261e}
 .bt.rs td{padding:7px 6px}.bt.rs td.nm1{min-width:0}.bt.rs td.nm1 small{color:var(--mute);font-size:12px;margin-left:6px}.bt.rs td:first-child{position:static}.bt.rs tr.sec td{padding:8px 6px}
 @media(max-width:700px){.otb{padding:14px}.otb .orow{flex-wrap:nowrap;overflow-x:auto;margin:4px 0;padding-bottom:2px;-webkit-overflow-scrolling:touch}.otb .orow>*{flex:none}.otb .orow>b{min-width:0}.otb input[type=search]{min-width:180px}}
+.bt td.nm b{display:inline}.bt td.nm .ebtn{display:inline-block;min-height:26px!important;height:26px;padding:0 10px!important;margin-left:8px;font-size:12px;vertical-align:middle;line-height:1}
 </style>
 <link rel="stylesheet" href="auth.css">
 <style>[hidden]{display:none!important}.navout{margin-top:auto}.main.fa-wrap{padding:24px}</style>
@@ -578,7 +579,7 @@ function orcamento(){
   var q=(ui.oq||'').toLowerCase().trim();
   var vis=lines.filter(function(l){return (tf==='all'||(l.tipo||'Outros')===tf)&&(!q||((l.nome||'')+' '+(l.desc||'')+' '+(l.notas||'')+' '+(l.tipo||'')).toLowerCase().indexOf(q)>=0)});
   var vh=all?SM.map(function(m){return '<th>'+m.slice(0,3)+' (€)</th>'}).join('')+'<th>Total (€)</th>':'<th>'+SM[om]+' (€)</th><th>Época (€)</th>';
-  var ncols=3+(all?13:2)+(ed?1:0);
+  var ncols=3+(all?13:2);
   var vc=function(m,editable){
     m=(m||[]).map(Number);while(m.length<12)m.push(0);
     var inp=function(i){return editable?'<td><span class="ei"><input type="number" step="0.5" data-bf="m" data-i="'+i+'" value="'+(+m[i]||0)+'" aria-label="'+SM[i]+' em euros"><i>€</i></span></td>':'<td>'+cell(m[i])+'</td>'};
@@ -587,7 +588,7 @@ function orcamento(){
   var row=function(l){
     var nome=l.nome||l.label||'',tp=l.tipo||'Outros';
     var dd=l.desc||'';if(nome===tp&&dd){nome=dd;dd=''}
-    return '<tr data-id="'+l.id+'"><td class="nm"><b>'+esc(nome)+'</b><small>'+esc(tp+(dd?' · '+dd:''))+(l.nota&&!isPessoa(l)?' · gera nota':'')+'</small>'+(l.notas?'<small class="nt">'+esc(l.notas)+'</small>':'')+'</td><td class="qn">'+(l.qty==null?'–':l.qty)+'</td><td class="qn">'+(l.unit==null?'–':eur(+l.unit))+'</td>'+vc(l.m,ed)+(ed?'<td class="ac"><button class="btn sm" data-act="editline" data-id="'+l.id+'">Editar</button></td>':'')+'</tr>';
+    return '<tr data-id="'+l.id+'"><td class="nm"><b>'+esc(nome)+'</b>'+(ed?' <button class="btn sm ebtn" data-act="editline" data-id="'+l.id+'">Editar</button>':'')+'<small>'+esc(tp+(dd?' · '+dd:''))+(l.nota&&!isPessoa(l)?' · gera nota':'')+'</small>'+(l.notas?'<small class="nt">'+esc(l.notas)+'</small>':'')+'</td><td class="qn">'+(l.qty==null?'–':l.qty)+'</td><td class="qn">'+(l.unit==null?'–':eur(+l.unit))+'</td>'+vc(l.m,ed)+'</tr>';
   };
   var rs=ui.ov==='resumo'&&!ed;
   if(rs){
@@ -607,15 +608,15 @@ function orcamento(){
   var body='';
   ['rec','exp'].forEach(function(k){
     var ls=vis.filter(function(l){return l.kind===k});
-    body+='<tr class="sec"><td colspan="3">'+(k==='rec'?'Receitas':'Despesas')+(ed?' <button class="btn sm" style="margin-left:10px;min-height:32px" data-act="newbl" data-k="'+k+'">+ Linha</button>':'')+'</td>'+vc(sumM(ls),false)+(ed?'<td></td>':'')+'</tr>';
+    body+='<tr class="sec"><td colspan="3">'+(k==='rec'?'Receitas':'Despesas')+(ed?' <button class="btn sm" style="margin-left:10px;min-height:32px" data-act="newbl" data-k="'+k+'">+ Linha</button>':'')+'</td>'+vc(sumM(ls),false)+'</tr>';
     (k==='rec'?TREC:TEXP).forEach(function(tp){
       var cl=ls.filter(function(l){return (l.tipo||'Outros')===tp});if(!cl.length)return;
-      body+='<tr class="cat"><td colspan="3">'+esc(tp)+'</td>'+vc(sumM(cl),false)+(ed?'<td></td>':'')+'</tr>'+cl.map(row).join('');
+      body+='<tr class="cat"><td colspan="3">'+esc(tp)+'</td>'+vc(sumM(cl),false)+'</tr>'+cl.map(row).join('');
     });
     if(!ls.length)body+='<tr><td colspan="'+ncols+'" class="hint">Sem linhas'+(tf!=='all'||q?' com este filtro':'')+'.</td></tr>';
   });
-  if(tf==='all'&&!q)body+='<tr class="sub"><td colspan="3">Balanço</td>'+vc(R.map(function(v,i){return v-D[i]}),false)+(ed?'<td></td>':'')+'</tr>';
-  h+='<section class="card wide"><div class="ch"><h2>'+title+'</h2></div>'+(ed?'<p class="hint">Modo de edição: escreve os valores diretamente nos meses; usa «Editar» numa linha para mudar nome, tipo, descrição, notas ou quantidade. Tudo fica guardado.</p>':'')+'<div class="tblw"><table class="bt"><thead><tr><th>Nome</th><th class="r">Qtd</th><th class="r">Valor unit.</th>'+vh+(ed?'<th></th>':'')+'</tr></thead><tbody>'+body+'</tbody></table></div></section>';
+  if(tf==='all'&&!q)body+='<tr class="sub"><td colspan="3">Balanço</td>'+vc(R.map(function(v,i){return v-D[i]}),false)+'</tr>';
+  h+='<section class="card wide"><div class="ch"><h2>'+title+'</h2></div>'+(ed?'<p class="hint">Modo de edição: escreve os valores diretamente nos meses; usa «Editar» numa linha para mudar nome, tipo, descrição, notas ou quantidade. Tudo fica guardado.</p>':'')+'<div class="tblw"><table class="bt"><thead><tr><th>Nome</th><th class="r">Qtd</th><th class="r">Valor unit.</th>'+vh+'</tr></thead><tbody>'+body+'</tbody></table></div></section>';
   return h;
 }
 
