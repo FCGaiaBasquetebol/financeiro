@@ -563,7 +563,7 @@ function orcamento(){
   var tf=ui.otipo,present=[];
   if(cc!=='all'){
     TREC.concat(TEXP).forEach(function(t){if(present.indexOf(t)<0&&lines.some(function(l){return (l.tipo||'Outros')===t}))present.push(t)});
-    if(present.indexOf('Treinador')>=0||present.indexOf('Coordenador')>=0)present.unshift('Treinadores');
+    if(present.indexOf('Treinador')>=0||present.indexOf('Coordenador')>=0)present=present.filter(function(x){return x!=='Treinador'&&x!=='Coordenador'});present.unshift('Treinadores');
     if(tf!=='all'&&present.indexOf(tf)<0)tf='all';
   }
   h+='<section class="card wide otb"><div class="orow"><b class="hint">Centro de custo</b>'+pill('occ','all','Global',cc==='all')+CCS.map(function(c){return pill('occ',c,c,cc===c)}).join('')+'</div>'
