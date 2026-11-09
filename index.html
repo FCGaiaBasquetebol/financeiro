@@ -75,7 +75,7 @@ h1,h2{margin:0}
 .bar.in i{background:var(--in)} .bar.out i{background:var(--out)}
 .cols{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
 .card{flex:1 1 420px;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:4px}
-.card.wide{flex-basis:100%}
+.card.wide{flex:0 0 auto;width:100%}
 .card h2{font-size:16px;font-weight:600}
 .card .ch{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:8px}
 .card .ch a{font-size:13px;font-weight:600;text-decoration:underline}
@@ -199,7 +199,7 @@ table.stf input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink)}
 .mbar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}.mbar select{min-height:44px;padding:4px 12px;border:1px solid var(--field-line);border-radius:12px;background:var(--field);color:var(--ink);font-weight:600}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .ei{display:inline-flex;align-items:center;gap:4px}.ei i{font-style:normal;color:var(--mute);font-weight:600}.bt tr.cat td{font-weight:600;font-size:13px;background:var(--bg);color:var(--ink);border-top:1px solid var(--line)}.bt tr.ct td{font-weight:600;color:var(--mute);font-size:12px}
 
-.otb .orow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}.otb .orow>b{min-width:108px}
+.card.wide.otb{flex:none}.otb .orow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}.otb .orow>b{min-width:108px}
 .otb input[type=search]{min-height:44px;min-width:200px;flex:1;max-width:320px;padding:0 14px;border-radius:999px;border:1px solid var(--field-line);background:transparent;color:var(--ink);font:inherit}
 .mnav{display:inline-flex;gap:6px;align-items:center}.mnav select{min-height:44px;padding:0 10px;border-radius:10px;border:1px solid var(--field-line);background:transparent;color:var(--ink);font:inherit}
 .bt td.nm{min-width:240px}.bt td.nm b{display:block}.bt td.nm small{display:block;font-size:12px;color:var(--mute);margin-top:1px;white-space:normal}.bt td.nm small.nt{font-style:italic}
